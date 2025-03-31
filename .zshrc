@@ -227,10 +227,26 @@ alias catcsv="~/code/pythonScripts/csvTabulatePrint.py"
 alias bat="batcat"
 alias server="~/code/pythonScripts/pythonServer.py"
 alias lip="~/code/pythonScripts/lip.py"
+alias ble="~/code/pythonScripts/ble_sender.py $1"
+alias partition="~/code/pythonScripts/partitions_table.py $1"
 alias g="lazygit"
 alias env_nrf="source ~/zephyrproject/.venv/bin/activate"
 alias get_nrf="source /home/seginipe/ncs/v2.4.1/zephyr/zephyr-env.sh && west zephyr-export"
 alias tmux="tmux -u"
+alias tsdiff="python3 ~/code/pythonScripts/python_ts_diff.py $1 $2"
+alias nrfj="python3 ~/code/pythonScripts/nrfj.py $@"
+
+
+#function run
+run() {
+    interval=${1:-1}  # Default sleep interval is 1 second if not provided
+
+    shift
+    while true; do
+        "$@"
+        sleep "$interval"
+    done
+}
 
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
