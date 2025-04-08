@@ -94,6 +94,8 @@ vim.opt.spell = true
 vim.opt.hlsearch = true
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 
+vim.opt.termguicolors = true
+
 -- Diagnostic keymaps
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous [D]iagnostic message" })
 vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next [D]iagnostic message" })
@@ -138,6 +140,7 @@ vim.keymap.set("n", "<M-s>", "<C-W>-")
 vim.api.nvim_set_keymap("n", "zl", "zL", { noremap = true })
 vim.api.nvim_set_keymap("n", "zh", "zH", { noremap = true })
 
+vim.keymap.set("n", "<C-g>", ":ClangdSwitchSourceHeader<CR>", { desc = "Switch between source/header file" })
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -162,6 +165,7 @@ end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup("plugins")
+require("lualine").setup()
 
 vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
 	pattern = "*.overlay",

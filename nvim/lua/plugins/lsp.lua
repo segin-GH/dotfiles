@@ -79,6 +79,16 @@ return {
 					--  Symbols are things like variables, functions, types, etc.
 					map("<leader>ds", require("telescope.builtin").lsp_document_symbols, "[D]ocument [S]ymbols")
 
+					-- Bind the keymap for get functions in the current document
+					map("<leader>df", function()
+						require("telescope.builtin").lsp_document_symbols({ symbols = "function" })
+					end, "[D]ocument [F]unctions")
+
+					-- Bind the keymap for get variables in the current document
+					map("<leader>dv", function()
+						require("telescope.builtin").lsp_document_symbols({ symbols = "variable" })
+					end, "[D]ocument [V]ariables")
+
 					-- Fuzzy find all the symbols in your current workspace.
 					--  Similar to document symbols, except searches over your entire project.
 					map(
