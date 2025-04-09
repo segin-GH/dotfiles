@@ -198,7 +198,7 @@ alias cat="batcat"
 alias server="~/code/pythonScripts/pythonServer.py"
 alias lip="~/code/pythonScripts/lip.py"
 alias g="lazygit"
-alias t="tmux -u"
+alias tmux="tmux -u"
 
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.

@@ -1471,6 +1471,6 @@
 
 
 # BEGIN_KITTY_THEME
-# Nord
+# Atom
 include current-theme.conf
 # END_KITTY_THEME
