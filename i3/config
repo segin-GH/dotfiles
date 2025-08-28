@@ -316,11 +316,11 @@ bindsym $mod+t  [instance="termz"] scratchpad show; [instance="termz"] move posi
 
 
 for_window [instance="notesi"] floating enable
-for_window [instance="notesi"] resize set 1600 1000
+for_window [instance="notesi"] resize set 1800 1000
 for_window [instance="notesi"] move scratchpad
 for_window [instance="notesi"] border pixel 5
 
-bindsym $mod+Shift+n exec  kitty --name notesi -e nvim ~/notes/index.norg
+bindsym $mod+Shift+n exec  kitty --name notesi -e nvim -c 'colorscheme habamax' ~/notes/index.norg
 bindsym $mod+n  [instance="notesi"] scratchpad show; [instance="notesi"] move position center
 
 

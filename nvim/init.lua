@@ -87,6 +87,8 @@ vim.g.loaded_netrw = 1
 vim.opt.spelllang = "en_us"
 vim.opt.spell = true
 
+vim.go.laststatus = 0
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -165,7 +167,6 @@ end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup("plugins")
-require("lualine").setup()
 
 vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
 	pattern = "*.overlay",

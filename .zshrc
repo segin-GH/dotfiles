@@ -118,7 +118,7 @@ alias b="byobu"
 ## ESP-IDF aliases
 
 alias get_idf=". $HOME/esp/esp-idf/export.sh"
-alias idf_v5.0=". $HOME/esp/esp-idf-v5.0/export.sh"S
+alias idf_v5.0=". $HOME/esp/esp-idf-v5.0/export.sh"
 # Aliases for build and other frequently used commands
 alias idf="idf.py"
 alias idfb="idf.py build"
@@ -126,7 +126,7 @@ alias idfb="idf.py build"
 # Flash using idf.py on a specific USB port and then run HSPL monitor
 function idffmp() {
     local port=${1:-0}  # Default to USB0 if no port is specified
-    idf.py -p "/dev/ttyUSB${port}" flash && hspl_monitor $port
+    idf.py -p "/dev/ttyUSB${port}" flash monitor
 }
 
 # Function to monitor using idf.py on a specific USB port
@@ -182,8 +182,14 @@ function pica() {
     picocom -b 115200 /dev/ttyACM$port
 }
 
+function pico() {
+    current_date=$(date +"%Y-%m-%d")
+    picocom -b 115200 "$1" -g ~/temp/log/bs-"$current_date".log
+}
+
 alias pic="picu"
 alias pica="pica"
+alias pico="pico"
 
 function  git_commit() {
     if [ -z "$1" ]; then
@@ -235,6 +241,8 @@ alias get_nrf="source /home/seginipe/ncs/v2.4.1/zephyr/zephyr-env.sh && west zep
 alias tmux="tmux -u"
 alias tsdiff="python3 ~/code/pythonScripts/python_ts_diff.py $1 $2"
 alias nrfj="python3 ~/code/pythonScripts/nrfj.py $@"
+alias get_idf='. $HOME/esp/esp-idf/export.sh'
+alias rmb="rm -rf ./build"
 
 
 #function run
@@ -270,3 +278,16 @@ export PATH="$PATH:/opt/nvim-linux64/bin"
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 export PATH="$PATH:$HOME/go/bin"
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+if command -v pyenv 1>/dev/null 2>&1; then
+  eval "$(pyenv init -)"
+fi
+
+# From nrfutil completion install
+[[ -r "${HOME}/.nrfutil/share/nrfutil-completion/scripts/zsh/setup.zsh" ]] && . "${HOME}/.nrfutil/share/nrfutil-completion/scripts/zsh/setup.zsh"
+
+# Initialize zsh completion system
+autoload -Uz compinit
+compinit
+

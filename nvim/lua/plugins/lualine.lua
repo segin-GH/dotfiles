@@ -105,9 +105,9 @@ return {
 		})
 
 		ins_left({ "filesize", cond = conditions.buffer_not_empty })
-		ins_left({ "filename", cond = conditions.buffer_not_empty, color = { fg = colors.magenta, gui = "bold" } })
-		ins_left({ "location" })
-		ins_left({ "progress", color = { fg = colors.fg } })
+		ins_left({ "filename", cond = conditions.buffer_not_empty, color = { fg = colors.magenta } })
+		ins_right({ "location" })
+		ins_right({ "progress", color = { fg = colors.fg } })
 		ins_left({
 			"diagnostics",
 			sources = { "nvim_diagnostic" },
@@ -117,12 +117,6 @@ return {
 				warn = { fg = colors.yellow },
 				info = { fg = colors.cyan },
 			},
-		})
-
-		ins_left({
-			function()
-				return "%="
-			end,
 		})
 
 		ins_right({
