@@ -331,3 +331,13 @@ for_window [instance="topi"] border pixel 5
 
 bindsym $mod+Shift+u  exec kitty --name topi -e btop --utf-force
 bindsym $mod+u  [instance="topi"] scratchpad show; [instance="topi"] move position center
+
+
+for_window [instance="spoti"] floating enable
+for_window [instance="spoti"] resize set 1600 1000
+for_window [instance="spoti"] move scratchpad
+for_window [instance="spoti"] border pixel 1
+for_window [instance="spoti"] title_format Spotify
+
+bindsym $mod+Shift+y  exec kitty --name spoti -e spotify --utf-force
+bindsym $mod+y  [instance="spoti"] scratchpad show; [instance="spoti"] move position center
