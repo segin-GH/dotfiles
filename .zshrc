@@ -77,7 +77,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting you-should-use)
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -110,7 +110,7 @@ alias vim='nvim'
 set -o vi
 export EDITOR='nvim'
 
-alias gloc="git config user.name segin-dz ; git config user.email seginipe@dozee.io"
+alias gloc="git config user.name segin-GH ; git config user.email segin.bytes@gmail.com"
 alias jnb="jupyter notebook"
 alias jlb="jupyter lab"
 alias b="byobu"
@@ -243,6 +243,7 @@ alias tsdiff="python3 ~/code/pythonScripts/python_ts_diff.py $1 $2"
 alias nrfj="python3 ~/code/pythonScripts/nrfj.py $@"
 alias get_idf='. $HOME/esp/esp-idf/export.sh'
 alias rmb="rm -rf ./build"
+alias get_ncs="nrfutil sdk-manager toolchain launch --ncs-version v3.0.2 -- zsh -c 'source ~/ncs/v3.0.2/zephyr/zephyr-env.sh && exec zsh'"
 
 
 #function run
@@ -269,7 +270,7 @@ export TERM=xterm-256color
 # eval $(thefuck --alias fk)
 
 # nvim 
-export PATH="$PATH:/opt/nvim-linux64/bin"
+export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 
 # cargo
 #. "$HOME/.cargo/env"
@@ -291,3 +292,6 @@ fi
 autoload -Uz compinit
 compinit
 
+
+# opencode
+export PATH=/home/seginipe/.opencode/bin:$PATH
