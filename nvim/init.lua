@@ -62,7 +62,7 @@ vim.opt.splitbelow = true
 --  See `:help 'list'`
 --  and `:help 'listchars'`
 vim.opt.list = true
-vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
+vim.opt.listchars = { tab = "  ", trail = "·", nbsp = "␣" }
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = "split"
@@ -145,6 +145,18 @@ vim.api.nvim_set_keymap("n", "zh", "zH", { noremap = true })
 vim.keymap.set("n", "<C-g>", ":ClangdSwitchSourceHeader<CR>", { desc = "Switch between source/header file" })
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
+--
+-- This is a fix for Unable to load nvim-treesitter.ts_utils #1715
+
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = { "norg", "neorg" },
+	callback = function()
+		if pcall(vim.treesitter.start) then
+			vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+			vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+		end
+	end,
+})
 
 -- Highlight when yanking (copying) text
 --  Try it with `yap` in normal mode
