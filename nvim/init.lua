@@ -142,7 +142,7 @@ vim.keymap.set("n", "<M-s>", "<C-W>-")
 vim.api.nvim_set_keymap("n", "zl", "zL", { noremap = true })
 vim.api.nvim_set_keymap("n", "zh", "zH", { noremap = true })
 
-vim.keymap.set("n", "<C-g>", ":ClangdSwitchSourceHeader<CR>", { desc = "Switch between source/header file" })
+vim.keymap.set("n", "<C-g>", ":LspClangdSwitchSourceHeader<CR>", { desc = "Switch between source/header file" })
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 --

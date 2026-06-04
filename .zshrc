@@ -110,7 +110,8 @@ alias vim='nvim'
 set -o vi
 export EDITOR='nvim'
 
-alias gloc="git config user.name segin-GH ; git config user.email segin.bytes@gmail.com"
+# alias gloc="git config user.name segin-GH ; git config user.email segin.bytes@gmail.com"
+alias gloc="git config user.name segin-dz ; git config user.email seginipe@dozee.io"
 alias jnb="jupyter notebook"
 alias jlb="jupyter lab"
 alias b="byobu"
