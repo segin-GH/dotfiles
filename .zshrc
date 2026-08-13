@@ -222,3 +222,9 @@ export TERM=xterm-256color
 # nvim 
 
 export PATH="$PATH:/opt/nvim-linux64/bin"
+
+# opencode
+export PATH="$HOME/.opencode/bin:$PATH"
+
+# user local binaries (zen browser, kitty, ...)
+export PATH="$HOME/.local/bin:$PATH"
