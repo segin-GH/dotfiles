@@ -82,7 +82,7 @@ link_file() {
 }
 
 install_packages() {
-    local pkgs=(vim i3 curl wget zsh lxappearance maim xclip brightnessctl chromium-browser)
+    local pkgs=(vim i3 curl wget zsh lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome)
     info "Installing system packages: ${pkgs[*]}"
     sudo apt update
     sudo apt install -y "${pkgs[@]}"
