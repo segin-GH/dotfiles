@@ -23,12 +23,13 @@ Usage: $0 [OPTIONS]
 
 Options:
   --all        run every step (default)
-  --packages   apt packages (vim, i3, curl, wget, zsh, gh, ...)
+  --packages   apt packages (i3, xorg, vim, curl, wget, zsh, gh, ...)
   --kitty      install kitty + desktop integration
   --symlink    symlink dotfiles into place
   --zsh        install oh-my-zsh + powerlevel10k
   --pyenv      install pyenv
   --fzf        install fzf
+  --fonts      install Maple Mono NF + Font Awesome
   --skip-sudo  skip the sudo password prompt (system steps skipped)
   -h, --help   show this help
 EOF
@@ -48,13 +49,14 @@ for arg in "$@"; do
         --zsh)       RUN_ALL=0; STEPS+=(zsh) ;;
         --pyenv)     RUN_ALL=0; STEPS+=(pyenv) ;;
         --fzf)       RUN_ALL=0; STEPS+=(fzf) ;;
+        --fonts)     RUN_ALL=0; STEPS+=(fonts) ;;
         --skip-sudo) SKIP_SUDO=1 ;;
         -h|--help)   usage ;;
         *) err "unknown option: $arg"; usage ;;
     esac
 done
 
-[[ $RUN_ALL -eq 1 ]] && STEPS=(packages kitty symlink zsh pyenv fzf)
+[[ $RUN_ALL -eq 1 ]] && STEPS=(packages kitty symlink zsh pyenv fzf fonts)
 
 # Cache sudo credentials once so long apt runs never prompt mid-script.
 SUDO_KEEPALIVE_PID=""
@@ -82,7 +84,7 @@ link_file() {
 }
 
 install_packages() {
-    local pkgs=(vim i3 curl wget zsh lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome)
+    local pkgs=(xorg i3 vim curl wget zsh lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome)
     info "Installing system packages: ${pkgs[*]}"
     sudo apt update
     sudo apt install -y "${pkgs[@]}"
@@ -164,6 +166,21 @@ setup_fzf() {
     ok "fzf installed"
 }
 
+setup_fonts() {
+    local fonts_dir="$HOME/.local/share/fonts"
+    info "Installing Maple Mono NF + Font Awesome..."
+    mkdir -p "$fonts_dir"
+    local tmpdir url
+    tmpdir="$(mktemp -d)"
+    url="https://github.com/subframe7536/Maple-font/releases/download/v7.9/MapleMono-NF.zip"
+    curl -fsSL -o "$tmpdir/MapleMono-NF.zip" "$url"
+    unzip -o -q "$tmpdir/MapleMono-NF.zip" 'MapleMono-NF-*.ttf' -d "$tmpdir"
+    cp "$tmpdir"/MapleMono-NF-*.ttf "$fonts_dir/"
+    rm -rf "$tmpdir"
+    fc-cache -f "$fonts_dir"
+    ok "Maple Mono NF installed"
+}
+
 main() {
     if [[ $SKIP_SUDO -eq 0 ]] && [[ " ${STEPS[*]} " == *" packages "* ]]; then
         setup_sudo
@@ -176,6 +193,7 @@ main() {
             zsh)      setup_zsh ;;
             pyenv)    setup_pyenv ;;
             fzf)      setup_fzf ;;
+            fonts)    setup_fonts ;;
         esac
     done
     ok "Done"

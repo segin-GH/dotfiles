@@ -6,10 +6,10 @@
 #: individual font faces and even specify special fonts for particular
 #: characters.
 
-font_family      Maple Mono NF
-bold_font        auto
-italic_font      auto
-bold_italic_font auto
+# font_family      monospace
+# bold_font        auto
+# italic_font      auto
+# bold_italic_font auto
 
 #: You can specify different fonts for the bold/italic/bold-italic
 #: variants. To get a full list of supported fonts use the `kitty
@@ -1471,7 +1471,6 @@ bold_italic_font auto
 
 
 # BEGIN_KITTY_THEME
-# Nord
+# Atom
 include current-theme.conf
 # END_KITTY_THEME
-map shift+enter send_text all \e\r
