@@ -1,95 +1,184 @@
-# ## BASIC
+#!/usr/bin/env bash
+set -euo pipefail
 
-# sudo apt install vim -y;
-# sudo apt install i3 -y;
-# sudo apt install curl -y;
-# sudo apt install wget -y;
+# dotfiles setup script
+# Usage: ./setup.sh [--all|--packages|--kitty|--symlink|--zsh|--pyenv|--fzf]
 
-# ## KITY
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin launch=n;
-# sudo ln -s ~/.local/kitty.app/bin/kitty /usr/local/bin/;
-# cp ~/.local/kitty.app/share/applications/kitty.desktop ~/.local/share/applications/;
-# cp ~/.local/kitty.app/share/applications/kitty-open.desktop ~/.local/share/applications/;
-# sed -i "s|Icon=kitty|Icon=/home/$USER/.local/kitty.app/share/icons/hicolor/256x256/apps/kitty.png|g" ~/.local/share/applications/kitty*.desktop;
-# sed -i "s|Exec=kitty|Exec=/home/$USER/.local/kitty.app/bin/kitty|g" ~/.local/share/applications/kitty*.desktop;
-# cp ~/.local/kitty.app/share/applications/kitty.desktop ~/Desktop;
-# sed -i "s|Icon=kitty|Icon=/home/$USER/.local/kitty.app/share/icons/hicolor/256x256/apps/kitty.png|g" ~/Desktop/kitty*.desktop;
- #sed -i "s|Exec=kitty|Exec=/home/$USER/.local/kitty.app/bin/kitty|g" ~/Desktop/kitty*.desktop;
-# gio set ~/Desktop/kitty*.desktop metadata::trusted true;
-# chmod a+x ~/Desktop/kitty*.desktop;
+C_INFO=$'\033[1;34m'
+C_OK=$'\033[1;32m'
+C_WARN=$'\033[1;33m'
+C_ERR=$'\033[1;31m'
+C_OFF=$'\033[0m'
 
-## CP FILES
+info() { printf '%s[*]%s %s\n' "$C_INFO" "$C_OFF" "$*"; }
+ok()   { printf '%s[+]%s %s\n' "$C_OK" "$C_OFF" "$*"; }
+warn() { printf '%s[!]%s %s\n' "$C_WARN" "$C_OFF" "$*"; }
+err()  { printf '%s[x]%s %s\n' "$C_ERR" "$C_OFF" "$*"; }
 
-# cd ~/code/dot-files;
-# mkdir .config/i3;
-# cp config /home/yui/.config/i3;
-# mkdir -p  .vim/colors
-# cd .vim/colors
-# wget https://raw.githubusercontent.com/crusoexia/vim-monokai/master/colors/monokai.vim
-# cp .vimrc /home/yui/
-# cp current-theme.conf kitty.conf ~/.config/kitty
+usage() {
+    cat <<EOF
+Usage: $0 [OPTIONS]
 
+Options:
+  --all        run every step (default)
+  --packages   apt packages (vim, i3, curl, wget, zsh, gh, ...)
+  --kitty      install kitty + desktop integration
+  --symlink    symlink dotfiles into place
+  --zsh        install oh-my-zsh + powerlevel10k
+  --pyenv      install pyenv
+  --fzf        install fzf
+  --skip-sudo  skip the sudo password prompt (system steps skipped)
+  -h, --help   show this help
+EOF
+    exit 0
+}
 
-# ## I3 SETUP 
+STEPS=()
+RUN_ALL=1
+SKIP_SUDO=0
 
-# sudo apt install redshift -y;
-# sudo apt install nitrogen -y;
-# sudo apt install lxappearance -y;
-# sudo apt install maim -y;
-# sudo apt install xclip -y;
-# sudo apt install brightnessctl -y;
+for arg in "$@"; do
+    case "$arg" in
+        --all)       RUN_ALL=1 ;;
+        --packages)  RUN_ALL=0; STEPS+=(packages) ;;
+        --kitty)     RUN_ALL=0; STEPS+=(kitty) ;;
+        --symlink)   RUN_ALL=0; STEPS+=(symlink) ;;
+        --zsh)       RUN_ALL=0; STEPS+=(zsh) ;;
+        --pyenv)     RUN_ALL=0; STEPS+=(pyenv) ;;
+        --fzf)       RUN_ALL=0; STEPS+=(fzf) ;;
+        --skip-sudo) SKIP_SUDO=1 ;;
+        -h|--help)   usage ;;
+        *) err "unknown option: $arg"; usage ;;
+    esac
+done
 
-# ## VSCODE
+[[ $RUN_ALL -eq 1 ]] && STEPS=(packages kitty symlink zsh pyenv fzf)
 
-# sudo apt update;
-# curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg;
-# sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg;
-# echo "deb [arch=amd64] http://packages.microsoft.com/repos/vscode stable main" | sudo \
-#    tee /etc/apt/sources.list.d/vs-code.list;
-# sudo apt update;
-# sudo apt install code;
+# Cache sudo credentials once so long apt runs never prompt mid-script.
+SUDO_KEEPALIVE_PID=""
+setup_sudo() {
+    [[ $EUID -eq 0 ]] && return
+    if ! sudo -v; then
+        err "sudo password required for system package steps"
+        exit 1
+    fi
+    ( while true; do sudo -n true; sleep 60; done ) 2>/dev/null &
+    SUDO_KEEPALIVE_PID=$!
+    trap '[[ -n "$SUDO_KEEPALIVE_PID" ]] && kill "$SUDO_KEEPALIVE_PID" 2>/dev/null' EXIT
+}
 
-# ## BROWSER
+link_file() {
+    local src="$DOTFILES_DIR/$1"
+    local dst="$2"
+    mkdir -p "$(dirname "$dst")"
+    if [[ -e "$dst" && ! -L "$dst" ]]; then
+        warn "backing up existing $2 -> $2.bak"
+        mv "$dst" "$dst.bak"
+    fi
+    ln -sfn "$src" "$dst"
+    ok "linked $1 -> $2"
+}
 
-# sudo apt install -y chromium-browser
+install_packages() {
+    local pkgs=(vim i3 curl wget zsh lxappearance maim xclip brightnessctl chromium-browser)
+    info "Installing system packages: ${pkgs[*]}"
+    sudo apt update
+    sudo apt install -y "${pkgs[@]}"
+    ok "System packages installed"
+}
 
-# ## GITHUB
+install_kitty() {
+    if command -v kitty >/dev/null 2>&1; then
+        ok "kitty already installed"
+        return
+    fi
+    info "Installing kitty via https://sw.kovidgoyal.net/kitty/installer.sh"
+    curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin launch=n
 
-# sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
-# sudo apt-add-repository https://cli.github.com/packages
-# sudo apt update
-# sudo apt install gh
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$HOME/.local/kitty.app/bin/kitty" "$HOME/.local/bin/kitty"
 
-# ## ZSH
+    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+        warn "$HOME/.local/bin is not on PATH; add it to your shell rc"
+    fi
+    ok "kitty installed"
+}
 
- #sudo apt install zsh -y;
- # sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)";
- #sleep 1
-# sudo apt update;
-# cp ~/code/dot-files/.zshrc  /home/yui/;
-# git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k;
+symlink_dotfiles() {
+    info "Symlinking dotfiles..."
+    link_file "i3/config"                "$HOME/.config/i3/config"
+    link_file "i3/scripts"               "$HOME/.config/i3/scripts"
+    link_file "i3status/config"          "$HOME/.config/i3status/config"
+    link_file "kitty/kitty.conf"         "$HOME/.config/kitty/kitty.conf"
+    link_file "kitty/current-theme.conf" "$HOME/.config/kitty/current-theme.conf"
+    link_file "nvim"                     "$HOME/.config/nvim"
+    link_file "lazygit/config.yml"       "$HOME/.config/lazygit/config.yml"
+    link_file ".vimrc"                   "$HOME/.vimrc"
+    link_file ".zshrc"                   "$HOME/.zshrc"
+    link_file ".tmux.conf"               "$HOME/.tmux.conf"
+    link_file ".gitconfig"               "$HOME/.gitconfig"
+    ok "Dotfiles symlinked"
+}
 
-## PYENV
+setup_zsh() {
+    info "Setting up oh-my-zsh + powerlevel10k..."
+    if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+        info "Installing oh-my-zsh"
+        RUNZSH=no sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+    fi
+    local p10k="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+    if [[ ! -d "$p10k" ]]; then
+        info "Installing powerlevel10k theme"
+        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k"
+    fi
+    ok "zsh configured"
+}
 
-#sudo apt-get update;
-#curl https://pyenv.run | zsh;
-#sleep 1;
-#export PATH="$HOME/.pyenv/bin:$PATH" && eval "$(pyenv init --path)" && echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n eval "$(pyenv init -)"\nfi' >> ~/.zshrc;
-#sleep 1;
-#exec $SHELL;
-#pyenv --version;
+setup_pyenv() {
+    info "Setting up pyenv..."
+    if [[ ! -d "$HOME/.pyenv" ]]; then
+        info "Installing pyenv via https://pyenv.run"
+        curl https://pyenv.run | bash
+    fi
+    if ! grep -q 'pyenv init' "$HOME/.zshrc"; then
+        cat >> "$HOME/.zshrc" <<'EOF'
 
-## GIT CONFIG
+# pyenv
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
+EOF
+    fi
+    ok "pyenv configured"
+}
 
-#git config --global user.name "segin-GH"
-#git config --global user.email "segin.bytes@gmail.com"
-#git config --global diff.tool vimdiff
-#git config --global pull.rebase true
-#git config --global --add difftool.prompt false
+setup_fzf() {
+    info "Installing fzf..."
+    if [[ ! -d "$HOME/.fzf" ]]; then
+        info "Installing fzf from https://github.com/junegunn/fzf"
+        git clone --depth 1 https://github.com/junegunn/fzf.git "$HOME/.fzf"
+    fi
+    "$HOME/.fzf/install" --all
+    ok "fzf installed"
+}
 
-## FZF
+main() {
+    if [[ $SKIP_SUDO -eq 0 ]] && [[ " ${STEPS[*]} " == *" packages "* ]]; then
+        setup_sudo
+    fi
+    for step in "${STEPS[@]}"; do
+        case "$step" in
+            packages) install_packages ;;
+            kitty)    install_kitty ;;
+            symlink)  symlink_dotfiles ;;
+            zsh)      setup_zsh ;;
+            pyenv)    setup_pyenv ;;
+            fzf)      setup_fzf ;;
+        esac
+    done
+    ok "Done"
+}
 
-#git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-#~/.fzf/install
-
+main

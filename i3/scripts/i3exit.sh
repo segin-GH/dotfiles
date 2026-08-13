@@ -3,7 +3,7 @@
 
 case "$1" in
     lock)
-       /home/aya/.config/i3/scripts/lock/lock -p -n 
+       /home/$USER/.config/i3/scripts/lock/lock -p -n 
 			;;
     logout)
         i3-msg exit

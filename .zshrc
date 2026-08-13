@@ -113,7 +113,6 @@ export EDITOR='nvim'
 alias gloc="git config user.name segin-hls ; git config user.email segin@hacklab.solutions"
 alias jnb="jupyter notebook"
 alias jlb="jupyter lab"
-alias b="byobu"
 
 ## ESP-IDF aliases
 
@@ -159,7 +158,6 @@ idfm() {
 
 
 alias clr="clear"
-alias eag="cd /home/yui/app/eagle-9.6.2; ./eagle"
 
 
 git_commit() {
@@ -192,7 +190,6 @@ alias gct="git commit -a -m\"$1\""
 alias bb="chromium"
 alias grepr="grep -rin"
 alias grep="grep --color=auto"
-alias get_tb="export PATH=\"/home/yui/hacklab/TestBench/firmware/rpi:\$PATH\""
 alias catcsv="~/code/pythonScripts/csvTabulatePrint.py"
 alias cat="batcat"
 alias server="~/code/pythonScripts/pythonServer.py"
@@ -222,14 +219,6 @@ export FZF_DEFAULT_COMMAND="find . -path '*/\.*' -type d -prune -o -type f -prin
 #
 export TERM=xterm-256color
 
-# the fuck
-
-eval $(thefuck --alias)
-eval $(thefuck --alias fk)
-
 # nvim 
 
 export PATH="$PATH:/opt/nvim-linux64/bin"
-
-# cargo
-. "$HOME/.cargo/env"
