@@ -28,6 +28,7 @@ Options:
   --symlink    symlink dotfiles into place
   --zsh        install oh-my-zsh + powerlevel10k
   --pyenv      install pyenv
+  --nvim       install neovim (latest release to /opt)
   --fzf        install fzf
   --fonts      install Maple Mono NF + Font Awesome
   --skip-sudo  skip the sudo password prompt (system steps skipped)
@@ -48,6 +49,7 @@ for arg in "$@"; do
         --symlink)   RUN_ALL=0; STEPS+=(symlink) ;;
         --zsh)       RUN_ALL=0; STEPS+=(zsh) ;;
         --pyenv)     RUN_ALL=0; STEPS+=(pyenv) ;;
+        --nvim)      RUN_ALL=0; STEPS+=(nvim) ;;
         --fzf)       RUN_ALL=0; STEPS+=(fzf) ;;
         --fonts)     RUN_ALL=0; STEPS+=(fonts) ;;
         --skip-sudo) SKIP_SUDO=1 ;;
@@ -56,7 +58,7 @@ for arg in "$@"; do
     esac
 done
 
-[[ $RUN_ALL -eq 1 ]] && STEPS=(packages kitty symlink zsh pyenv fzf fonts)
+[[ $RUN_ALL -eq 1 ]] && STEPS=(packages kitty symlink zsh pyenv nvim fzf fonts)
 
 # Cache sudo credentials once so long apt runs never prompt mid-script.
 SUDO_KEEPALIVE_PID=""
@@ -84,7 +86,7 @@ link_file() {
 }
 
 install_packages() {
-    local pkgs=(xorg i3 vim curl wget zsh lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome)
+    local pkgs=(xorg i3 vim curl wget zsh lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome scrot imagemagick)
     info "Installing system packages: ${pkgs[*]}"
     sudo apt update
     sudo apt install -y "${pkgs[@]}"
@@ -138,6 +140,22 @@ setup_zsh() {
     ok "zsh configured"
 }
 
+install_nvim() {
+    if command -v nvim >/dev/null 2>&1; then
+        ok "neovim already installed: $(command -v nvim)"
+        return
+    fi
+    local ver="nvim-linux-x86_64"
+    local tarball="/tmp/${ver}.tar.gz"
+    info "Downloading latest neovim release"
+    curl -fL -o "$tarball" "https://github.com/neovim/neovim/releases/latest/download/${ver}.tar.gz"
+    sudo rm -rf "/opt/${ver}"
+    sudo tar -C /opt -xzf "$tarball"
+    rm -f "$tarball"
+    ln -sf "/opt/${ver}/bin/nvim" "$HOME/.local/bin/nvim"
+    ok "neovim installed and linked to $HOME/.local/bin/nvim"
+}
+
 setup_pyenv() {
     info "Setting up pyenv..."
     if [[ ! -d "$HOME/.pyenv" ]]; then
@@ -182,7 +200,7 @@ setup_fonts() {
 }
 
 main() {
-    if [[ $SKIP_SUDO -eq 0 ]] && [[ " ${STEPS[*]} " == *" packages "* ]]; then
+    if [[ $SKIP_SUDO -eq 0 ]] && [[ " ${STEPS[*]} " == *" packages "* || " ${STEPS[*]} " == *" nvim "* ]]; then
         setup_sudo
     fi
     for step in "${STEPS[@]}"; do
@@ -192,6 +210,7 @@ main() {
             symlink)  symlink_dotfiles ;;
             zsh)      setup_zsh ;;
             pyenv)    setup_pyenv ;;
+            nvim)     install_nvim ;;
             fzf)      setup_fzf ;;
             fonts)    setup_fonts ;;
         esac

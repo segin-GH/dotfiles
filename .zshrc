@@ -219,9 +219,7 @@ export FZF_DEFAULT_COMMAND="find . -path '*/\.*' -type d -prune -o -type f -prin
 #
 export TERM=xterm-256color
 
-# nvim 
-
-export PATH="$PATH:/opt/nvim-linux64/bin"
+# nvim (installed to /opt, symlinked to ~/.local/bin/nvim)
 
 # opencode
 export PATH="$HOME/.opencode/bin:$PATH"
