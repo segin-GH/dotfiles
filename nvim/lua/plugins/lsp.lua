@@ -79,6 +79,16 @@ return {
 					--  Symbols are things like variables, functions, types, etc.
 					map("<leader>ds", require("telescope.builtin").lsp_document_symbols, "[D]ocument [S]ymbols")
 
+					-- Bind the keymap for get functions in the current document
+					map("<leader>df", function()
+						require("telescope.builtin").lsp_document_symbols({ symbols = "function" })
+					end, "[D]ocument [F]unctions")
+
+					-- Bind the keymap for get variables in the current document
+					map("<leader>dv", function()
+						require("telescope.builtin").lsp_document_symbols({ symbols = "variable" })
+					end, "[D]ocument [V]ariables")
+
 					-- Fuzzy find all the symbols in your current workspace.
 					--  Similar to document symbols, except searches over your entire project.
 					map(
@@ -166,7 +176,20 @@ return {
 					cmd = { "clangd", "--offset-encoding=utf-16" },
 				},
 
-				-- gopls = {},
+				gopls = {
+					cmd = { "gopls" },
+					filetypes = { "go", "gomod", "gowork", "gotmpl" },
+					root_dir = require("lspconfig.util").root_pattern("go.work", "go.mod", ".git"),
+					settings = {
+						gopls = {
+							completeUnimported = true,
+							usePlaceholders = true,
+							analyses = {
+								unusedparams = true,
+							},
+						},
+					},
+				},
 				-- pyright = {},
 				-- rust_analyzer = {},
 				-- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -256,6 +279,7 @@ return {
 				c = { "clang-format" },
 				cpp = { "clang-format" },
 				python = { "black" },
+				go = { "gofmt" },
 			},
 		},
 	},

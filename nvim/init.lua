@@ -62,7 +62,7 @@ vim.opt.splitbelow = true
 --  See `:help 'list'`
 --  and `:help 'listchars'`
 vim.opt.list = true
-vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
+vim.opt.listchars = { tab = "  ", trail = "·", nbsp = "␣" }
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = "split"
@@ -87,12 +87,16 @@ vim.g.loaded_netrw = 1
 vim.opt.spelllang = "en_us"
 vim.opt.spell = true
 
+vim.go.laststatus = 0
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
+
+vim.opt.termguicolors = true
 
 -- Diagnostic keymaps
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous [D]iagnostic message" })
@@ -138,8 +142,21 @@ vim.keymap.set("n", "<M-s>", "<C-W>-")
 vim.api.nvim_set_keymap("n", "zl", "zL", { noremap = true })
 vim.api.nvim_set_keymap("n", "zh", "zH", { noremap = true })
 
+vim.keymap.set("n", "<C-g>", ":LspClangdSwitchSourceHeader<CR>", { desc = "Switch between source/header file" })
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
+--
+-- This is a fix for Unable to load nvim-treesitter.ts_utils #1715
+
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = { "norg", "neorg" },
+	callback = function()
+		if pcall(vim.treesitter.start) then
+			vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+			vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+		end
+	end,
+})
 
 -- Highlight when yanking (copying) text
 --  Try it with `yap` in normal mode
@@ -163,5 +180,7 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup("plugins")
 
--- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et
+vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
+	pattern = "*.overlay",
+	command = "set filetype=dts",
+})

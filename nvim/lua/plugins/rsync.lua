@@ -1,4 +1,5 @@
 return {
+	enable = false,
 	"kenn7/vim-arsync",
 	dependencies = {
 		"prabirshrestha/async.vim",

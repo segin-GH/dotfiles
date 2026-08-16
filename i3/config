@@ -213,10 +213,10 @@ colors {
     client.placeholder      #2e3440 #1f222d #888888 #1f222d
     client.urgent           #900000 #900000 #ffffff #900000
 
-    client.background       #24242
+    client.background       #242424
 
 
-exec_always nitrogen --restore
+exec_always sh ~/.fehbg
 
 exec_always redshift -P -O  5000
 

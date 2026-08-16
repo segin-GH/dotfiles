@@ -23,11 +23,14 @@ Usage: $0 [OPTIONS]
 
 Options:
   --all        run every step (default)
-  --packages   apt packages (i3, xorg, vim, curl, wget, zsh, gh, ...)
+  --packages   apt packages (i3, xorg, vim, curl, wget, zsh, ...)
+  --gh         install GitHub CLI (gh) from official repo
   --kitty      install kitty + desktop integration
   --symlink    symlink dotfiles into place
   --zsh        install oh-my-zsh + powerlevel10k
   --pyenv      install pyenv
+  --node       install nvm + Node.js 24
+  --rust       install rustup + Rust toolchain
   --nvim       install neovim (latest release to /opt)
   --fzf        install fzf
   --fonts      install Maple Mono NF + Font Awesome
@@ -45,10 +48,13 @@ for arg in "$@"; do
     case "$arg" in
         --all)       RUN_ALL=1 ;;
         --packages)  RUN_ALL=0; STEPS+=(packages) ;;
+        --gh)        RUN_ALL=0; STEPS+=(gh) ;;
         --kitty)     RUN_ALL=0; STEPS+=(kitty) ;;
         --symlink)   RUN_ALL=0; STEPS+=(symlink) ;;
         --zsh)       RUN_ALL=0; STEPS+=(zsh) ;;
         --pyenv)     RUN_ALL=0; STEPS+=(pyenv) ;;
+        --node)      RUN_ALL=0; STEPS+=(node) ;;
+        --rust)      RUN_ALL=0; STEPS+=(rust) ;;
         --nvim)      RUN_ALL=0; STEPS+=(nvim) ;;
         --fzf)       RUN_ALL=0; STEPS+=(fzf) ;;
         --fonts)     RUN_ALL=0; STEPS+=(fonts) ;;
@@ -58,7 +64,7 @@ for arg in "$@"; do
     esac
 done
 
-[[ $RUN_ALL -eq 1 ]] && STEPS=(packages kitty symlink zsh pyenv nvim fzf fonts)
+[[ $RUN_ALL -eq 1 ]] && STEPS=(packages gh kitty symlink zsh pyenv node rust nvim fzf fonts)
 
 # Cache sudo credentials once so long apt runs never prompt mid-script.
 SUDO_KEEPALIVE_PID=""
@@ -86,11 +92,33 @@ link_file() {
 }
 
 install_packages() {
-    local pkgs=(xorg i3 vim curl wget zsh lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome scrot imagemagick)
+    local pkgs=(xorg i3 vim curl wget zsh lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome scrot imagemagick ripgrep fd-find lm-sensors htop neofetch)
     info "Installing system packages: ${pkgs[*]}"
     sudo apt update
     sudo apt install -y "${pkgs[@]}"
+    sudo sensors-detect --auto
     ok "System packages installed"
+}
+
+install_gh() {
+    if command -v gh >/dev/null 2>&1; then
+        ok "gh already installed: $(gh --version | head -1)"
+        return
+    fi
+    info "Installing GitHub CLI from official repo"
+    type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)
+    sudo mkdir -p -m 755 /etc/apt/keyrings
+    local out
+    out=$(mktemp)
+    wget -nv -O"$out" https://cli.github.com/packages/githubcli-archive-keyring.gpg
+    cat "$out" | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null
+    sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+    sudo mkdir -p -m 755 /etc/apt/sources.list.d
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+    rm -f "$out"
+    sudo apt update
+    sudo apt install gh -y
+    ok "gh installed"
 }
 
 install_kitty() {
@@ -174,6 +202,41 @@ EOF
     ok "pyenv configured"
 }
 
+setup_node() {
+    if [[ -d "$HOME/.nvm" ]]; then
+        ok "nvm already installed"
+    else
+        info "Installing nvm v0.40.6"
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.6/install.sh | bash
+    fi
+    if ! command -v nvm >/dev/null 2>&1 && [[ -s "$HOME/.nvm/nvm.sh" ]]; then
+        . "$HOME/.nvm/nvm.sh"
+    fi
+    if command -v nvm >/dev/null 2>&1; then
+        info "Installing Node.js 24"
+        nvm install 24
+        nvm alias default 24
+        ok "Node.js installed"
+    else
+        warn "nvm not available; install nvm manually or restart your shell and re-run this step"
+    fi
+}
+
+setup_rust() {
+    if command -v rustc >/dev/null 2>&1; then
+        ok "rust already installed: $(rustc --version)"
+        return
+    fi
+    info "Installing rustup + Rust toolchain"
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    if [[ -s "$HOME/.cargo/env" ]]; then
+        . "$HOME/.cargo/env"
+        ok "rust installed: $(rustc --version)"
+    else
+        warn "rustup installed but ~/.cargo/env not found"
+    fi
+}
+
 setup_fzf() {
     info "Installing fzf..."
     if [[ ! -d "$HOME/.fzf" ]]; then
@@ -200,16 +263,19 @@ setup_fonts() {
 }
 
 main() {
-    if [[ $SKIP_SUDO -eq 0 ]] && [[ " ${STEPS[*]} " == *" packages "* || " ${STEPS[*]} " == *" nvim "* ]]; then
+    if [[ $SKIP_SUDO -eq 0 ]] && [[ " ${STEPS[*]} " == *" packages "* || " ${STEPS[*]} " == *" gh "* || " ${STEPS[*]} " == *" nvim "* ]]; then
         setup_sudo
     fi
     for step in "${STEPS[@]}"; do
         case "$step" in
             packages) install_packages ;;
+            gh)       install_gh ;;
             kitty)    install_kitty ;;
             symlink)  symlink_dotfiles ;;
             zsh)      setup_zsh ;;
             pyenv)    setup_pyenv ;;
+            node)     setup_node ;;
+            rust)     setup_rust ;;
             nvim)     install_nvim ;;
             fzf)      setup_fzf ;;
             fonts)    setup_fonts ;;
