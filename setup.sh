@@ -23,7 +23,7 @@ Usage: $0 [OPTIONS]
 
 Options:
   --all        run every step (default)
-  --packages   apt packages (i3, xorg, vim, curl, wget, zsh, ...)
+  --packages   apt packages (i3, xorg, vim, curl, wget, zsh, feh, ...)
   --gh         install GitHub CLI (gh) from official repo
   --kitty      install kitty + desktop integration
   --symlink    symlink dotfiles into place
@@ -34,6 +34,8 @@ Options:
   --nvim       install neovim (latest release to /opt)
   --fzf        install fzf
   --fonts      install Maple Mono NF + Font Awesome
+  --obsidian   install Obsidian (via .deb from GitHub releases)
+  --serial     install picocom + add user to dialout group
   --skip-sudo  skip the sudo password prompt (system steps skipped)
   -h, --help   show this help
 EOF
@@ -58,13 +60,15 @@ for arg in "$@"; do
         --nvim)      RUN_ALL=0; STEPS+=(nvim) ;;
         --fzf)       RUN_ALL=0; STEPS+=(fzf) ;;
         --fonts)     RUN_ALL=0; STEPS+=(fonts) ;;
+        --obsidian)  RUN_ALL=0; STEPS+=(obsidian) ;;
+        --serial)    RUN_ALL=0; STEPS+=(serial) ;;
         --skip-sudo) SKIP_SUDO=1 ;;
         -h|--help)   usage ;;
         *) err "unknown option: $arg"; usage ;;
     esac
 done
 
-[[ $RUN_ALL -eq 1 ]] && STEPS=(packages gh kitty symlink zsh pyenv node rust nvim fzf fonts)
+[[ $RUN_ALL -eq 1 ]] && STEPS=(packages gh kitty symlink zsh pyenv node rust nvim fzf fonts serial)
 
 # Cache sudo credentials once so long apt runs never prompt mid-script.
 SUDO_KEEPALIVE_PID=""
@@ -92,7 +96,7 @@ link_file() {
 }
 
 install_packages() {
-    local pkgs=(xorg i3 vim curl wget zsh lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome scrot imagemagick ripgrep fd-find lm-sensors htop neofetch)
+    local pkgs=(xorg i3 vim curl wget zsh lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome scrot imagemagick ripgrep fd-find lm-sensors htop neofetch feh)
     info "Installing system packages: ${pkgs[*]}"
     sudo apt update
     sudo apt install -y "${pkgs[@]}"
@@ -151,6 +155,7 @@ symlink_dotfiles() {
     link_file ".zshrc"                   "$HOME/.zshrc"
     link_file ".tmux.conf"               "$HOME/.tmux.conf"
     link_file ".gitconfig"               "$HOME/.gitconfig"
+    link_file "wallpapers"               "$HOME/Pictures/wallpapers"
     ok "Dotfiles symlinked"
 }
 
@@ -247,6 +252,40 @@ setup_fzf() {
     ok "fzf installed"
 }
 
+install_obsidian() {
+    if command -v obsidian >/dev/null 2>&1; then
+        ok "obsidian already installed: $(command -v obsidian)"
+        return
+    fi
+    local deb_cache="${XDG_CACHE_HOME:-$HOME/.cache}/obsidian-deb"
+    install -d "$deb_cache"
+    info "Resolving latest Obsidian release from GitHub"
+    local tag
+    tag=$(curl -fsSI https://github.com/obsidianmd/obsidian-releases/releases/latest | tr -d '\r' | grep -i '^location:' | rev | cut -d/ -f1 | rev)
+    local url="https://github.com/obsidianmd/obsidian-releases/releases/download/$tag/obsidian_${tag#v}_amd64.deb"
+    curl -fL --progress-bar "$url" -o "$deb_cache/obsidian_${tag#v}_amd64.deb"
+    sudo apt install "$deb_cache/obsidian_${tag#v}_amd64.deb" -y
+    ok "obsidian installed"
+}
+
+setup_serial() {
+    if command -v picocom >/dev/null 2>&1; then
+        ok "picocom already installed: $(picocom --version | head -1)"
+    else
+        info "Installing picocom"
+        sudo apt update
+        sudo apt install -y picocom
+        ok "picocom installed"
+    fi
+    if id -nG "$USER" | grep -qw dialout; then
+        ok "already member of dialout group"
+    else
+        info "Adding $USER to dialout group"
+        sudo usermod -a -G dialout "$USER"
+        warn "log out and back in (or reboot) for the dialout group to take effect"
+    fi
+}
+
 setup_fonts() {
     local fonts_dir="$HOME/.local/share/fonts"
     info "Installing Maple Mono NF + Font Awesome..."
@@ -263,7 +302,7 @@ setup_fonts() {
 }
 
 main() {
-    if [[ $SKIP_SUDO -eq 0 ]] && [[ " ${STEPS[*]} " == *" packages "* || " ${STEPS[*]} " == *" gh "* || " ${STEPS[*]} " == *" nvim "* ]]; then
+    if [[ $SKIP_SUDO -eq 0 ]] && [[ " ${STEPS[*]} " == *" packages "* || " ${STEPS[*]} " == *" gh "* || " ${STEPS[*]} " == *" nvim "* || " ${STEPS[*]} " == *" obsidian "* || " ${STEPS[*]} " == *" serial "* ]]; then
         setup_sudo
     fi
     for step in "${STEPS[@]}"; do
@@ -279,6 +318,8 @@ main() {
             nvim)     install_nvim ;;
             fzf)      setup_fzf ;;
             fonts)    setup_fonts ;;
+            obsidian) install_obsidian ;;
+            serial)   setup_serial ;;
         esac
     done
     ok "Done"
