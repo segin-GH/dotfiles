@@ -96,7 +96,7 @@ link_file() {
 }
 
 install_packages() {
-    local pkgs=(xorg i3 vim curl wget zsh lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome scrot imagemagick ripgrep fd-find lm-sensors htop neofetch feh)
+    local pkgs=(xorg i3 vim curl wget zsh lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome scrot imagemagick ripgrep fd-find lm-sensors htop neofetch feh clang-format-22 bat)
     info "Installing system packages: ${pkgs[*]}"
     sudo apt update
     sudo apt install -y "${pkgs[@]}"

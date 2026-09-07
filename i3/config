@@ -189,7 +189,7 @@ bindsym $mod+r mode "resize"
 # finds out, if available)
 bar {
         font pango:Ubuntu Mono, FontAwesome 11
-        status_command i3status
+        status_command ~/.config/i3/scripts/bt_batt.sh
 	mode hide
 colors {
             separator  #1f222d

@@ -46,6 +46,7 @@ return {
 			--    That is to say, every time a new file is opened that is associated with
 			--    an lsp (for example, opening `main.rs` is associated with `rust_analyzer`) this
 			--    function will be executed to configure the current buffer
+			local highlight_augroup = vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = true })
 			vim.api.nvim_create_autocmd("LspAttach", {
 				group = vim.api.nvim_create_augroup("kickstart-lsp-attach", { clear = true }),
 				callback = function(event)
@@ -120,8 +121,6 @@ return {
 					-- When you move your cursor, the highlights will be cleared (the second autocommand).
 					local client = vim.lsp.get_client_by_id(event.data.client_id)
 					if client and client.server_capabilities.documentHighlightProvider then
-						local highlight_augroup =
-							vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
 						vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
 							buffer = event.buf,
 							group = highlight_augroup,
@@ -173,8 +172,58 @@ return {
 			--        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
 			local servers = {
 				clangd = {
-					cmd = { "clangd", "--offset-encoding=utf-16" },
-				},
+				cmd = { "clangd", "--offset-encoding=utf-16" },
+				-- Walk up from the file to find the project root, so it works no
+				-- matter what the project is named or where it lives.
+				root_dir = function(fname)
+					local markers =
+						{ "compile_commands.json", "compile_flags.txt", ".git", "Makefile", "CMakeLists.txt" }
+					local dir = vim.fs.dirname(fname)
+					while true do
+						for _, marker in ipairs(markers) do
+							if vim.uv.fs_stat(dir .. "/" .. marker) then
+								return dir
+							end
+						end
+						-- nested build dirs, e.g. build/<project-name>/compile_commands.json
+						local hits = vim.fn.glob(dir .. "/build/*/compile_commands.json", false, true)
+						if #hits > 0 then
+							return dir
+						end
+						local parent = vim.fs.dirname(dir)
+						if parent == dir then
+							break
+						end
+						dir = parent
+					end
+					return vim.fs.dirname(fname)
+				end,
+				on_new_config = function(new_config, root_dir)
+					local cdb_dir = nil
+					if vim.uv.fs_stat(root_dir .. "/compile_commands.json") then
+						cdb_dir = root_dir
+					else
+						-- look for the db inside build/<any-name>/
+						local hits = vim.fn.glob(root_dir .. "/build/*/compile_commands.json", false, true)
+						-- also handle projects nested one level deeper (e.g. sdk repos)
+						if #hits == 0 then
+							hits = vim.fn.glob(root_dir .. "/*/build/*/compile_commands.json", false, true)
+						end
+						if #hits > 0 then
+							cdb_dir = vim.fs.dirname(hits[1])
+						end
+					end
+					if cdb_dir then
+						local flag = "--compile-commands-dir=" .. cdb_dir
+						for _, arg in ipairs(new_config.cmd) do
+							if arg == flag then
+								return
+							end
+						end
+						table.insert(new_config.cmd, flag)
+					end
+				end,
+			},
 
 				gopls = {
 					cmd = { "gopls" },
