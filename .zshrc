@@ -232,4 +232,16 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 
+# nrfutil toolchain shells export their own Python via PYTHONHOME/PYTHONPATH,
+# which breaks system python tools (thefuck). Toolchain python doesn't need them.
+unset PYTHONHOME PYTHONPATH
+
+# Let west build/flash work from any directory (loads Zephyr's west extensions)
+export ZEPHYR_BASE="$HOME/ncs/v3.4.0/zephyr"
+
 eval $(thefuck --alias fk)
+
+# Enter nRF Connect SDK toolchain shell, e.g.: get_ncs 3.4.0
+get_ncs() {
+  nrfutil toolchain-manager launch --ncs-version "$1" -- zsh
+}
