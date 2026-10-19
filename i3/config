@@ -55,6 +55,15 @@ bindsym $mod+d exec --no-startup-id dmenu_run -i -nb '#1f222d' -nf '#81a1c1' -sb
 #window design
 for_window [class="^.*"] border pixel 2
 
+# Gaps between windows (inner) and screen edges (outer).
+# i3 >= 4.22 has this built in; no i3-gaps fork needed.
+gaps inner 6
+gaps outer 6
+
+# Keep gaps visible even when a workspace has only one window.
+# (Set to "on" if you prefer a single window to fill the whole screen.)
+smart_gaps off
+
 # There also is the (new) i3-dmenu-desktop which only displays applications
 # shipping a .desktop file. It is a wrapper around dmenu, so you need that
 # installed.
