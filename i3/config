@@ -221,7 +221,9 @@ exec_always --no-startup-id pgrep -x picom >/dev/null || picom --config ~/.confi
 
  # Window color settings
     # class                 border  backgr. text    indicator
-    client.focused          #2c3136 #2c3136 #ffffff #81a1c1
+    # NOTE: with "border pixel", i3 draws the frame in the BACKGROUND colour
+    # (field 2), so the focused accent has to go there, not in field 1.
+    client.focused          #81a1c1 #81a1c1 #2e3440 #81a1c1
     client.unfocused        #2e3440 #1f222d #888888 #1f222d
     client.focused_inactive #2e3440 #1f222d #888888 #1f222d
     client.placeholder      #2e3440 #1f222d #888888 #1f222d
