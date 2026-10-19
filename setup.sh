@@ -36,6 +36,7 @@ Options:
   --fonts      install Maple Mono NF + Font Awesome
   --obsidian   install Obsidian (via .deb from GitHub releases)
   --serial     install picocom + add user to dialout group
+  --picom      install picom compositor (terminal transparency) + config
   --skip-sudo  skip the sudo password prompt (system steps skipped)
   -h, --help   show this help
 EOF
@@ -62,13 +63,14 @@ for arg in "$@"; do
         --fonts)     RUN_ALL=0; STEPS+=(fonts) ;;
         --obsidian)  RUN_ALL=0; STEPS+=(obsidian) ;;
         --serial)    RUN_ALL=0; STEPS+=(serial) ;;
+        --picom)     RUN_ALL=0; STEPS+=(picom) ;;
         --skip-sudo) SKIP_SUDO=1 ;;
         -h|--help)   usage ;;
         *) err "unknown option: $arg"; usage ;;
     esac
 done
 
-[[ $RUN_ALL -eq 1 ]] && STEPS=(packages gh kitty symlink zsh pyenv node rust nvim fzf fonts serial)
+[[ $RUN_ALL -eq 1 ]] && STEPS=(packages gh kitty symlink zsh pyenv node rust nvim fzf fonts serial picom)
 
 # Cache sudo credentials once so long apt runs never prompt mid-script.
 SUDO_KEEPALIVE_PID=""
@@ -96,7 +98,7 @@ link_file() {
 }
 
 install_packages() {
-    local pkgs=(xorg i3 vim curl wget zsh lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome scrot imagemagick ripgrep fd-find lm-sensors htop neofetch feh clang-format-22 bat)
+    local pkgs=(xorg i3 picom network-manager-applet vim curl wget zsh tmux lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome scrot imagemagick ripgrep fd-find jq lm-sensors htop neofetch feh clang-format-22 bat)
     info "Installing system packages: ${pkgs[*]}"
     sudo apt update
     sudo apt install -y "${pkgs[@]}"
@@ -147,6 +149,7 @@ symlink_dotfiles() {
     link_file "i3/config"                "$HOME/.config/i3/config"
     link_file "i3/scripts"               "$HOME/.config/i3/scripts"
     link_file "i3status/config"          "$HOME/.config/i3status/config"
+    link_file "picom/picom.conf"         "$HOME/.config/picom/picom.conf"
     link_file "kitty/kitty.conf"         "$HOME/.config/kitty/kitty.conf"
     link_file "kitty/current-theme.conf" "$HOME/.config/kitty/current-theme.conf"
     link_file "nvim"                     "$HOME/.config/nvim"
@@ -286,6 +289,19 @@ setup_serial() {
     fi
 }
 
+setup_picom() {
+    if command -v picom >/dev/null 2>&1; then
+        ok "picom already installed: $(picom --version | head -1)"
+    else
+        info "Installing picom compositor"
+        sudo apt update
+        sudo apt install -y picom
+        ok "picom installed"
+    fi
+    link_file "picom/picom.conf" "$HOME/.config/picom/picom.conf"
+    info "Restart i3 (\$mod+Shift+r) to start picom and enable transparency"
+}
+
 setup_fonts() {
     local fonts_dir="$HOME/.local/share/fonts"
     info "Installing Maple Mono NF + Font Awesome..."
@@ -302,7 +318,7 @@ setup_fonts() {
 }
 
 main() {
-    if [[ $SKIP_SUDO -eq 0 ]] && [[ " ${STEPS[*]} " == *" packages "* || " ${STEPS[*]} " == *" gh "* || " ${STEPS[*]} " == *" nvim "* || " ${STEPS[*]} " == *" obsidian "* || " ${STEPS[*]} " == *" serial "* ]]; then
+    if [[ $SKIP_SUDO -eq 0 ]] && [[ " ${STEPS[*]} " == *" packages "* || " ${STEPS[*]} " == *" gh "* || " ${STEPS[*]} " == *" nvim "* || " ${STEPS[*]} " == *" obsidian "* || " ${STEPS[*]} " == *" serial "* || " ${STEPS[*]} " == *" picom "* ]]; then
         setup_sudo
     fi
     for step in "${STEPS[@]}"; do
@@ -320,6 +336,7 @@ main() {
             fonts)    setup_fonts ;;
             obsidian) install_obsidian ;;
             serial)   setup_serial ;;
+            picom)    setup_picom ;;
         esac
     done
     ok "Done"

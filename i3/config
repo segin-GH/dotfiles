@@ -30,6 +30,7 @@ exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
 exec --no-startup-id nm-applet
+exec_always --no-startup-id pgrep -x nm-applet >/dev/null || nm-applet
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
@@ -189,7 +190,8 @@ bindsym $mod+r mode "resize"
 # finds out, if available)
 bar {
         font pango:Ubuntu Mono, FontAwesome 11
-        status_command ~/.config/i3/scripts/bt_batt.sh
+        status_command ~/.config/i3/scripts/status.py
+	tray_output primary
 	mode hide
 colors {
             separator  #1f222d
@@ -204,6 +206,9 @@ colors {
             binding_mode       #1f222d #81a1c1    #2e3440
     }
 }
+
+# Compositor: required for kitty transparency and window shadows.
+exec_always --no-startup-id pgrep -x picom >/dev/null || picom --config ~/.config/picom/picom.conf
 
  # Window color settings
     # class                 border  backgr. text    indicator
@@ -226,10 +231,11 @@ exec_always setxkbmap -option caps:escape
 exec xinput set-prop "SYNA7DB5:01 06CB:CD41 Touchpad" "libinput Tapping Enabled" 1
 exec xinput set-prop "ELAN1300:00 04F3:3087 Touchpad" "libinput Tapping Enabled" 1
 
-bindsym $mod+n Workspace number $ws9 exec obsidian
+bindsym $mod+n exec --no-startup-id ~/.config/i3/scripts/launch-or-focus.sh md.obsidian.Obsidian $ws9 obsidian
 
 
 bindsym $mod+b Workspace number $ws10 exec zen
+bindsym $mod+c Workspace number $ws2 exec chatgpt
 #bindsym $mod+n exec nautilus
 
 # Disable/Enable Touchpad
