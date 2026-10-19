@@ -203,16 +203,17 @@ bar {
 	tray_output primary
 	mode hide
 colors {
-            separator  #1f222d
-            background #1f222d
-            statusline #81a1c1
+            # Tokyo Night Dark (test, washed) - previous Nord values in git history
+            separator  #16161c
+            background #1a1b26
+            statusline #82a1e4
 
             #                   border  background text
-            focused_workspace  #1f222d #1f222d    #81a1c1
-            active_workspace   #1f222d #252936    #5e81ac
-            inactive_workspace #1f222d #1f222d    #4c566a
-            urgent_workspace   #1f222d #1f222d    #ee829f
-            binding_mode       #1f222d #81a1c1    #2e3440
+            focused_workspace  #1a1b26 #82a1e4    #1a1b26
+            active_workspace   #1a1b26 #2a2e3e    #82a1e4
+            inactive_workspace #1a1b26 #1a1b26    #585f80
+            urgent_workspace   #1a1b26 #1a1b26    #e17c8f
+            binding_mode       #1a1b26 #82a1e4    #1a1b26
     }
 }
 
@@ -223,13 +224,14 @@ exec_always --no-startup-id pgrep -x picom >/dev/null || picom --config ~/.confi
     # class                 border  backgr. text    indicator
     # NOTE: with "border pixel", i3 draws the frame in the BACKGROUND colour
     # (field 2), so the focused accent has to go there, not in field 1.
-    client.focused          #81a1c1 #81a1c1 #2e3440 #81a1c1
-    client.unfocused        #2e3440 #1f222d #888888 #1f222d
-    client.focused_inactive #2e3440 #1f222d #888888 #1f222d
-    client.placeholder      #2e3440 #1f222d #888888 #1f222d
-    client.urgent           #900000 #900000 #ffffff #900000
+    # Tokyo Night Dark (test, washed) - muted blue for the focused frame
+    client.focused          #435991 #435991 #c2caec #435991
+    client.unfocused        #16161c #1a1b26 #585f80 #1a1b26
+    client.focused_inactive #16161c #1a1b26 #585f80 #1a1b26
+    client.placeholder      #16161c #1a1b26 #585f80 #1a1b26
+    client.urgent           #e17c8f #e17c8f #1a1b26 #e17c8f
 
-    client.background       #242424
+    client.background       #1a1b26
 
 
 exec_always sh ~/.fehbg

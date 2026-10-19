@@ -6,20 +6,20 @@ return {
 		-- Author: shadmansaleh Credit: glepnir
 		local lualine = require("lualine")
 
-    -- Color table for highlights
+    -- Tokyo Night palette (matches kitty/i3)
     -- stylua: ignore
     local colors = {
-      bg       = '#202328',
-      fg       = '#bbc2cf',
-      yellow   = '#ECBE7B',
-      cyan     = '#008080',
-      darkblue = '#081633',
-      green    = '#98be65',
-      orange   = '#FF8800',
-      violet   = '#a9a1e1',
-      magenta  = '#c678dd',
-      blue     = '#51afef',
-      red      = '#ec5f67',
+      bg       = '#1a1b26',
+      fg       = '#c0caf5',
+      yellow   = '#e0af68',
+      cyan     = '#7dcfff',
+      darkblue = '#16161e',
+      green    = '#9ece6a',
+      orange   = '#ff9e64',
+      violet   = '#bb9af7',
+      magenta  = '#c7a9ff',
+      blue     = '#7aa2f7',
+      red      = '#f7768e',
     }
 
 		local conditions = {

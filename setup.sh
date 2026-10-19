@@ -97,6 +97,20 @@ link_file() {
     ok "linked $1 -> $2"
 }
 
+copy_file() {
+    local src="$DOTFILES_DIR/$1"
+    local dst="$2"
+    mkdir -p "$(dirname "$dst")"
+    if [[ -L "$dst" ]]; then
+        rm -f "$dst"
+    elif [[ -e "$dst" ]]; then
+        warn "backing up existing $2 -> $2.bak"
+        mv "$dst" "$dst.bak"
+    fi
+    install -m 600 "$src" "$dst"
+    ok "copied $1 -> $2"
+}
+
 install_packages() {
     local pkgs=(xorg i3 picom network-manager-applet vim curl wget zsh tmux lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome scrot imagemagick ripgrep fd-find jq lm-sensors htop neofetch feh clang-format-22 bat)
     info "Installing system packages: ${pkgs[*]}"
@@ -150,6 +164,10 @@ symlink_dotfiles() {
     link_file "i3/scripts"               "$HOME/.config/i3/scripts"
     link_file "i3status/config"          "$HOME/.config/i3status/config"
     link_file "picom/picom.conf"         "$HOME/.config/picom/picom.conf"
+    # OpenCode rewrites cli.json atomically, which would replace a symlink,
+    # so this one is copied instead.
+    copy_file "opencode/cli.json"        "$HOME/.config/opencode/cli.json"
+    link_file "opencode/themes/tokyonight-washed.json" "$HOME/.config/opencode/themes/tokyonight-washed.json"
     link_file "kitty/kitty.conf"         "$HOME/.config/kitty/kitty.conf"
     link_file "kitty/current-theme.conf" "$HOME/.config/kitty/current-theme.conf"
     link_file "nvim"                     "$HOME/.config/nvim"
