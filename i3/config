@@ -234,7 +234,9 @@ exec_always --no-startup-id pgrep -x picom >/dev/null || picom --config ~/.confi
     client.background       #1a1b26
 
 
-exec_always sh ~/.fehbg
+# One wallpaper spanning both monitors as a single canvas (see script for why
+# --no-xinerama matters). With no argument it restores the last image used.
+exec_always --no-startup-id ~/.config/i3/scripts/wallpaper.sh
 
 exec_always redshift -P -O  5000
 
@@ -282,9 +284,9 @@ bindsym Ctrl+Shift+Print exec --no-startup-id maim --select | xclip -selection c
 set $mode_display Display (e) External monitors, (l) Laptop, (a) All
 bindsym Mod1+d mode "$mode_display"
 mode "$mode_display" {
-    bindsym e exec --no-startup-id xrandr --output eDP-1 --off --output DP-1 --auto --primary --output HDMI-1-0 --auto --right-of DP-1, mode "default"
-    bindsym l exec --no-startup-id xrandr --output eDP-1 --auto --primary --output DP-1 --off --output  HDMI-1-0 --off, mode "default"
-    bindsym a exec --no-startup-id xrandr --output eDP-1 --auto --output DP-1 --auto --primary --output HDMI-1-0 --auto --right-of DP-1, mode "default"
+    bindsym e exec --no-startup-id xrandr --output eDP-1 --off --output DP-1 --auto --primary --output HDMI-1-0 --auto --right-of DP-1 && ~/.config/i3/scripts/wallpaper.sh, mode "default"
+    bindsym l exec --no-startup-id xrandr --output eDP-1 --auto --primary --output DP-1 --off --output  HDMI-1-0 --off && ~/.config/i3/scripts/wallpaper.sh, mode "default"
+    bindsym a exec --no-startup-id xrandr --output eDP-1 --auto --output DP-1 --auto --primary --output HDMI-1-0 --auto --right-of DP-1 && ~/.config/i3/scripts/wallpaper.sh, mode "default"
 
     bindsym Return mode "default"
     bindsym Escape mode "default"
