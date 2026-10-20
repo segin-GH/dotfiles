@@ -195,6 +195,9 @@ require("lazy").setup("plugins", {
 	},
 })
 
+-- ARM assembly comment handling (tree-sitter's asm grammar does not know '@').
+require("config.asm").setup()
+
 vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
 	pattern = "*.overlay",
 	command = "set filetype=dts",
