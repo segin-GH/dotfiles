@@ -1,0 +1,85 @@
+/* tokyo-night.rasi - washed Tokyo Night, matching i3/picom/dunst. */
+* {
+    bg:      #1a1b26;
+    bg-alt:  #16161e;
+    fg:      #c2caec;
+    fg-dim:  #565f80;
+    blue:    #82a1e4;
+    red:     #e17c8f;
+    green:   #b8d29a;
+    yellow:  #e5c890;
+    purple:  #b4a1e2;
+
+    background-color: transparent;
+    text-color: @fg;
+    border-color: @blue;
+    font: "Maple Mono NF 10";
+}
+
+window {
+    width: 560px;
+    padding: 14px;
+    border: 2px;
+    border-radius: 10px;
+    background-color: @bg;
+    location: center;
+    anchor: center;
+}
+
+mainbox {
+    spacing: 10px;
+    padding: 0;
+    children: [ inputbar, listview ];
+}
+
+inputbar {
+    background-color: @bg-alt;
+    border-radius: 6px;
+    padding: 10px 12px;
+    spacing: 8px;
+    children: [ prompt, entry ];
+}
+
+prompt {
+    text-color: @blue;
+    padding: 0 0 0 2px;
+}
+
+entry {
+    placeholder: "Search...";
+    placeholder-color: @fg-dim;
+    text-color: @fg;
+    cursor: text;
+}
+
+listview {
+    lines: 8;
+    spacing: 4px;
+    scrollbar: false;
+}
+
+element {
+    padding: 8px 10px;
+    spacing: 10px;
+    border-radius: 6px;
+}
+
+element normal {
+    background-color: transparent;
+    text-color: @fg;
+}
+
+element selected {
+    background-color: @blue;
+    text-color: @bg-alt;
+}
+
+element-icon {
+    size: 20px;
+    vertical-align: 0.5;
+}
+
+element-text {
+    vertical-align: 0.5;
+    text-color: inherit;
+}

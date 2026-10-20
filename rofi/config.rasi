@@ -1,0 +1,16 @@
+/* rofi - app launcher for i3. Theme: tokyo-night.rasi (washed palette). */
+configuration {
+    modi: "drun,run,window";
+    font: "Maple Mono NF 10";
+    show-icons: true;
+    icon-theme: "Adwaita";
+    terminal: "kitty";
+    drun-display-format: "{name}";
+    display-drun: "Apps";
+    display-run: "Run";
+    display-window: "Windows";
+    hover-select: true;
+    kb-cancel: "Escape,Control+g";
+}
+
+@theme "tokyo-night"

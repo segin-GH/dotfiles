@@ -112,7 +112,7 @@ copy_file() {
 }
 
 install_packages() {
-    local pkgs=(xorg i3 picom network-manager-applet vim curl wget zsh tmux lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome scrot imagemagick ripgrep fd-find jq lm-sensors htop neofetch feh clang-format-22 bat)
+    local pkgs=(xorg i3 picom dunst rofi network-manager-applet vim curl wget zsh tmux lxappearance maim xclip brightnessctl chromium-browser fonts-font-awesome scrot imagemagick ripgrep fd-find jq lm-sensors htop neofetch feh clang-format-22 bat)
     info "Installing system packages: ${pkgs[*]}"
     sudo apt update
     sudo apt install -y "${pkgs[@]}"
@@ -164,6 +164,11 @@ symlink_dotfiles() {
     link_file "i3/scripts"               "$HOME/.config/i3/scripts"
     link_file "i3status/config"          "$HOME/.config/i3status/config"
     link_file "picom/picom.conf"         "$HOME/.config/picom/picom.conf"
+    link_file "dunst/dunstrc"           "$HOME/.config/dunst/dunstrc"
+    link_file "rofi"                     "$HOME/.config/rofi"
+    link_file "fontconfig/fonts.conf"    "$HOME/.config/fontconfig/fonts.conf"
+    link_file "gtk/gtk-3.0/settings.ini" "$HOME/.config/gtk-3.0/settings.ini"
+    link_file "gtk/gtk-4.0/settings.ini" "$HOME/.config/gtk-4.0/settings.ini"
     # OpenCode rewrites cli.json atomically, which would replace a symlink,
     # so this one is copied instead.
     copy_file "opencode/cli.json"        "$HOME/.config/opencode/cli.json"
